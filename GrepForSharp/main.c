@@ -10,9 +10,9 @@ int checkNotNull(char *pointer) {
 }
 
 int main() {
-    size_t length = 10;
-    size_t index = 0;
-    char *line = (char *) malloc(length * sizeof(char));
+    size_t capacity = 10;
+    size_t length = 0;
+    char *line = (char *) malloc(capacity * sizeof(char));
     if (checkNotNull(line))
         return -1;
     line[0] = 0;
@@ -24,21 +24,21 @@ int main() {
             if (wasSharp)
                 printf("%s\n", line);
             wasSharp = 0;
-            index = 0;
+            length = 0;
             line[0] = 0;
         } else {
-            line[index] = current;
+            line[length] = current;
             if (current == '#') {
                 wasSharp = 1;
             }
-            ++index;
-            if (index == length) {
-                length *= 2;
-                line = (char *) realloc(line, length * sizeof(char));
+            ++length;
+            if (length == capacity) {
+                capacity *= 2;
+                line = (char *) realloc(line, capacity * sizeof(char));
                 if (checkNotNull(line))
                     return -1;
             }
-            line[index] = 0;
+            line[length] = 0;
         }
     }
     free(line);
