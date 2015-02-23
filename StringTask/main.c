@@ -51,6 +51,7 @@ char *readToken(char **lexemes, size_t lexemesCount) {
         readSymbol();
     }
     if (currentSymbol == EOF) {
+        free(line);
         return NULL;
     }
     if (begin)
@@ -116,6 +117,7 @@ char *readToken(char **lexemes, size_t lexemesCount) {
                 if (inQuotes) {
                     errorCode = 2;
                     printf("Wrong quote structure.\n");
+                    free(line);
                     return NULL;
                 } else {
                     inWord = 0;
