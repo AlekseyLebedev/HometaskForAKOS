@@ -9,3 +9,4 @@
   
   файлы:
   * ```StringTask\main.c``` - основной файл
+  * ```StringTask\CMakeLists.txt``` - файл для CMake, можно не смотреть
