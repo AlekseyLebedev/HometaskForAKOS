@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-main(int argc, char **argv) {
+int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         FILE *file = fopen(argv[i], "r");
         if (file != NULL) {
