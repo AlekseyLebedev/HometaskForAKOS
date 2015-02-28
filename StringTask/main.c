@@ -7,7 +7,7 @@ const int LEXEMES_COUNT = 5;
 
 int checkNull(char *pointer) {
     if (pointer == NULL) {
-        printf("Wrong memory alloc.\n");
+        fprintf(stderr, "Wrong memory alloc.\n");
         return 1;
     } else
         return 0;
@@ -116,7 +116,7 @@ char *readToken(char **lexemes, size_t lexemesCount) {
             if (currentSymbol == EOF) {
                 if (inQuotes) {
                     errorCode = 2;
-                    printf("Wrong quote structure.\n");
+                    fprintf(stderr, "Wrong quote structure.\n");
                     free(line);
                     return NULL;
                 } else {
