@@ -10,3 +10,12 @@
   файлы:
   * ```StringTask\main.c``` - основной файл
   * ```StringTask\CMakeLists.txt``` - файл для CMake, можно не смотреть
+ 
+* Cat:
+
+  директория: ```Cat```
+  
+  файлы:
+  * ```catFILE.c``` - cat с использованием высокоуровневых функций и FILE*
+  * ```catLowLevel.c``` - основной файл - cat с использованием функций open/read/write
+  * ```StringTask\CMakeLists.txt``` - файл для CMake, можно не смотреть
