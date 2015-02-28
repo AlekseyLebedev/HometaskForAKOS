@@ -16,6 +16,6 @@
   директория: ```Cat```
   
   файлы:
-  * ```catFILE.c``` - cat с использованием высокоуровневых функций и FILE*
-  * ```catLowLevel.c``` - основной файл - cat с использованием функций open/read/write
-  * ```StringTask\CMakeLists.txt``` - файл для CMake, можно не смотреть
+  * ```Cat\catFILE.c``` - cat с использованием высокоуровневых функций и FILE*
+  * ```Cat\catLowLevel.c``` - основной файл - cat с использованием функций open/read/write
+  * ```Cat\CMakeLists.txt``` - файл для CMake, можно не смотреть
