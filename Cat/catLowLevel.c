@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv) {
     size_t size = 8192;
-    char *text = malloc(size* sizeof(char));
+    char *text = malloc(size * sizeof(char));
     if (text == NULL) {
         fprintf(stderr, "Error in malloc\n");
     } else {
@@ -19,7 +19,15 @@ int main(int argc, char **argv) {
                         perror(argv[i]);
                     }
                     else {
-                        write(STDOUT_FILENO, text, count);
+                        ssize_t writed = 0;
+                        while (writed != count) {
+                            ssize_t printed = write(STDOUT_FILENO, text + writed, count - writed);
+                            if (printed >= 0) {
+                                writed += printed;
+                            } else {
+                                perror("cat: can't write to stdout");
+                            }
+                        }
                     }
                 } while (count > 0);
                 close(file);
