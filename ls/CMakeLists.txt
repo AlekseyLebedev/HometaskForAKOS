@@ -3,5 +3,5 @@ project(ls)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
-set(SOURCE_FILES main.c vector.h)
+set(SOURCE_FILES main.c vector.c)
 add_executable(ls ${SOURCE_FILES})

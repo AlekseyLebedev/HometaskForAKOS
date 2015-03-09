@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <strings.h>
+#include <ctype.h>
 
 #define VECTOR_TYPE char
 
@@ -93,9 +94,9 @@ void printFilesList(struct DirInfo *dirInfo) {
         line += 11;
         printf("%*s ", (int) dirInfo->linksLength, line);
         line += strlen(line) + 1;
-        printf("%*s ", (int) dirInfo->groupLength, line);
+        printf("%*s ", -(int) dirInfo->groupLength, line);
         line += strlen(line) + 1;
-        printf("%*s ", (int) dirInfo->userLength, line);
+        printf("%*s ", -(int) dirInfo->userLength, line);
         line += strlen(line) + 1;
         printf("%*s ", (int) dirInfo->sizeLength, line);
         line += strlen(line) + 1;
@@ -123,7 +124,7 @@ int printInfo(char *filename, struct DirInfo *dirInfo) {
         return 0;
     } else {
         int isdir = S_ISDIR(information.st_mode);
-        dirInfo->blocks += information.st_blocks >> 1;
+        dirInfo->blocks += (information.st_blocks + 1) >> 1;
         char *group;
         struct group *groupinfo = getgrgid(information.st_gid);
         if (groupinfo) {
@@ -167,18 +168,22 @@ int printInfo(char *filename, struct DirInfo *dirInfo) {
             return isdir;
         }
         name[0] = '\0';
-        if (S_IXUSR & information.st_mode) {
-            strcpy(name, "\x1b[1;32m");
-            wasColored = 1;
-        }
-        if (S_ISDIR(information.st_mode)) {
-            strcpy(name, "\x1b[1;34m");
-            wasColored = 1;
-        }
         int islnk = S_ISLNK(information.st_mode);
-        if (islnk) {
-            strcpy(name, "\x1b[1;36m");
-            wasColored = 1;
+        if (isatty(STDOUT_FILENO)) {
+            if (S_IXUSR & information.st_mode) {
+                strcpy(name, "\x1b[1;32m");
+                wasColored = 1;
+            }
+            if (S_ISDIR(information.st_mode)) {
+                strcpy(name, "\x1b[1;34m");
+                wasColored = 1;
+            }
+            if (islnk) {
+                strcpy(name, "\x1b[1;36m");
+                wasColored = 1;
+            }
+        } else {
+            errno = 0;
         }
         strcat(name, searchName);
         if (wasColored)
@@ -200,12 +205,7 @@ int printInfo(char *filename, struct DirInfo *dirInfo) {
             } while (lnklength == lnkcapacity);
             if (lnklength >= 0) {
                 destination[lnklength] = '\0';
-                if (lnklength == 1)
-                    lnklength += 2;
-                char *search = destination + lnklength - 2;
-                while (search > destination && *search != '/')
-                    search--;
-                name = strconcat(3, name, " -> ", search);
+                name = strconcat(3, name, " -> ", destination);
             } else {
                 name = NULL;
                 printError(filename);
@@ -275,9 +275,18 @@ int printInfo(char *filename, struct DirInfo *dirInfo) {
     }
 }
 
+int strLsCmp(const char *first, const char *second) {
+    int result = strcasecmp(first, second);
+    if (result) {
+        return result;
+    }
+    else {
+        return -strcmp(first, second);
+    }
+}
 
 int cmpstring(const void *a, const void *b) {
-    return strcmp(*(char *const *) a, *(char *const *) b);
+    return strLsCmp(*(char *const *) a, *(char *const *) b);
 }
 
 void skipinfo(char **pointer) {
@@ -287,7 +296,7 @@ void skipinfo(char **pointer) {
         }
         (*pointer)++;
     }
-    if (**pointer == '\033') {
+    if (**pointer == '\x1b') {
         while (**pointer != 'm')
             ++(*pointer);
         ++(*pointer);
@@ -299,7 +308,7 @@ int cmpfiles(const void *a, const void *b) {
     char *second = *(char **) b;
     skipinfo(&first);
     skipinfo(&second);
-    return strcasecmp((const char *) first, (const char *) second);
+    return strLsCmp((const char *) first, (const char *) second);
 }
 
 void printdir(const char *name, struct DirInfo *dirInfo) {
@@ -330,7 +339,7 @@ void printdir(const char *name, struct DirInfo *dirInfo) {
         if (errno != 0) {
             printError(name);
         }
-        printf("total: %zu\n", dirInfo->blocks);
+        printf("total %zu\n", dirInfo->blocks);
         qsort(dirInfo->output->array, dirInfo->output->size, sizeof(VECTOR_TYPE *), cmpfiles);
         printFilesList(dirInfo);
         printf("\n");
