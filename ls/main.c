@@ -52,8 +52,10 @@ char *strconcat(int count, ...) {
 }
 
 void printError(const char *name) {
+    int err = errno;
     char *message = strconcat(3, ERROR_PREFIX, name, ERROR_INFIX);
     if (!checkNull(message)) {
+        errno = err;
         perror(message);
         free(message);
     }
@@ -129,14 +131,18 @@ int printInfo(char *filename, struct DirInfo *dirInfo) {
         struct group *groupinfo = getgrgid(information.st_gid);
         if (groupinfo) {
             group = groupinfo->gr_name;
+            if (!group)
+                group = ERROR_STRING;
         } else {
             printError(filename);
             group = ERROR_STRING;
         }
         char *user;
         struct passwd *userinfo = getpwuid(information.st_uid);
-        if (groupinfo) {
+        if (userinfo) {
             user = userinfo->pw_name;
+            if (!user)
+                user = ERROR_STRING;
         } else {
             printError(filename);
             user = ERROR_STRING;
@@ -229,7 +235,7 @@ int printInfo(char *filename, struct DirInfo *dirInfo) {
         setMax(groupLength, &dirInfo->groupLength);
         setMax(linksLength, &dirInfo->linksLength);
         char *output = malloc((17 + timeLength + userLength + nameLength + groupLength
-                + sizeLength + linksLength) * sizeof(char));
+                               + sizeLength + linksLength) * sizeof(char));
         if (checkNull(output))
             return isdir;
         output[0] = isdir ? 'd' : islnk ? 'l' : '-';
@@ -322,7 +328,7 @@ void printdir(const char *name, struct DirInfo *dirInfo) {
         clearDirInfo(dirInfo);
         struct dirent *entry;
         while (entry = readdir(directory)) {
-            if (entry->d_name[0] != '.') {
+            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
                 char *filename = strconcat(3, name, "/", entry->d_name);
                 if (printInfo(filename, dirInfo)) {
                     if (vectorAdd(directories, filename)) {
